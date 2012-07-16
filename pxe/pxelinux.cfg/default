@@ -1,0 +1,10 @@
+default fedora
+prompt 1
+timeout 1
+
+label fedora
+  menu label ^Install Fedora
+  menu default
+  kernel vmlinuz
+  append initrd=initrd.img ks=hd:sdc:/ks.cfg
+

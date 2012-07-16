@@ -1,0 +1,7 @@
+#!/bin/bash
+
+qemu-kvm -boot n -m 1023 \
+    -net nic,vlan=1 \
+    -net user,vlan=1 \
+    -drive file=hd-boot,index=0,media=disk \
+    -drive file=hd-root,index=1,media=disk
