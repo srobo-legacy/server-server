@@ -3,6 +3,8 @@ import os
 import sys
 from subprocess import check_call, Popen, PIPE
 
+FEDORA_ISO = "Fedora-17-i386-DVD.iso"
+
 def run( *args, **kw ):
     "Wrapper around check_call that sets shell to True"
     kw["shell"] = True
@@ -15,6 +17,11 @@ def guestfish( args, cmds ):
                stdin = PIPE )
     p.communicate( cmds )
     assert p.wait() == 0
+
+if not os.path.exists( FEDORA_ISO ):
+    print >>sys.stderr, """Fedora ISO "{0}" not found.""".format( FEDORA_ISO )
+    print >>sys.stderr, "Aborting."
+    exit(1)
 
 # Create the boot disk
 run( "./create-ks-disk ks.cfg fd" )
@@ -50,4 +57,4 @@ run( """qemu-kvm -boot n -m 1023 \
     -drive file=hd-boot,index=0,media=disk \
     -drive file=hd-root,index=1,media=disk \
     -drive file=fd,index=2,media=disk \
-    -drive file=Fedora-17-i386-DVD.iso,media=cdrom""" )
+    -drive file={iso},media=cdrom""".format( FEDORA_ISO ) )
