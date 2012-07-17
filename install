@@ -2,8 +2,11 @@
 import os
 import sys
 from subprocess import check_call, Popen, PIPE
+import progressbar
+from urllib import urlretrieve
 
 FEDORA_ISO = "Fedora-17-i386-DVD.iso"
+FEDORA_ISO_URL = "http://download.fedoraproject.org/pub/fedora/linux/releases/17/Fedora/i386/iso/Fedora-17-i386-DVD.iso"
 
 def run( *args, **kw ):
     "Wrapper around check_call that sets shell to True"
@@ -18,10 +21,34 @@ def guestfish( args, cmds ):
     p.communicate( cmds )
     assert p.wait() == 0
 
+class PBWrapper(object):
+    def __init__(self):
+        self.pb = None
+
+def get_download_hook():
+
+    pw = PBWrapper()
+
+    def download_hook( down, chunk_size, total_size ):
+
+        if pw.pb == None:
+            w = [ "Downloading: ", progressbar.Percentage(), " ",
+                  progressbar.Bar( marker = progressbar.RotatingMarker() ),
+                  progressbar.FileTransferSpeed() ]
+
+            pw.pb = progressbar.ProgressBar( maxval = total_size,
+                                             widgets = w )
+            pw.pb.start()
+
+        pw.pb.update( down * chunk_size )
+
+    return download_hook
+
 if not os.path.exists( FEDORA_ISO ):
     print >>sys.stderr, """Fedora ISO "{0}" not found.""".format( FEDORA_ISO )
-    print >>sys.stderr, "Aborting."
-    exit(1)
+
+    urlretrieve( FEDORA_ISO_URL, FEDORA_ISO,
+                 reporthook = get_download_hook() )
 
 # Create the boot disk
 run( "./create-ks-disk ks.cfg fd" )
