@@ -4,6 +4,7 @@ import sys
 from subprocess import check_call, Popen, PIPE
 import progressbar
 from urllib import urlretrieve
+import shutil
 
 FEDORA_ISO = "Fedora-17-i386-DVD.iso"
 FEDORA_ISO_URL = "http://download.fedoraproject.org/pub/fedora/linux/releases/17/Fedora/i386/iso/Fedora-17-i386-DVD.iso"
@@ -61,6 +62,12 @@ for fname in [ "initrd.img", "vmlinuz" ]:
                 iso = FEDORA_ISO,
                 fname = fname,
                 of = target ) )
+
+# Get pxelinux
+target = os.path.join( PXE_DIR, "pxelinux.0" )
+if not os.path.exists(target):
+    shutil.copyfile( "/usr/share/syslinux/pxelinux.0",
+                     target )
 
 # Create the boot disk
 run( "./create-ks-disk ks.cfg fd" )
