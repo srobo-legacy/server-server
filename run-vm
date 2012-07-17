@@ -1,7 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env python
+from disks import *
+from subprocess import check_call
 
-qemu-kvm -boot n -m 1023 \
+check_call( """qemu-kvm -boot n -m 1023 \
     -net nic,vlan=1 \
     -net user,vlan=1 \
-    -drive file=hd-boot,index=0,media=disk \
-    -drive file=hd-root,index=1,media=disk
+    -drive file={boot},index=0,media=disk \
+    -drive file={root},index=1,media=disk""".format(
+        boot = HD_BOOT, root = HD_ROOT),
+            shell = True )

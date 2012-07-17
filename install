@@ -5,6 +5,7 @@ from subprocess import check_call, Popen, PIPE
 import progressbar
 from urllib import urlretrieve
 import shutil
+from disks import *
 
 FEDORA_ISO = "Fedora-17-i386-DVD.iso"
 FEDORA_ISO_URL = "http://download.fedoraproject.org/pub/fedora/linux/releases/17/Fedora/i386/iso/Fedora-17-i386-DVD.iso"
@@ -69,14 +70,14 @@ if not os.path.exists(target):
     shutil.copyfile( "/usr/share/syslinux/pxelinux.0",
                      target )
 
-# Create the boot disk
-run( "./create-ks-disk ks.cfg fd" )
+# Create the kickstart disk
+run( "./create-ks-disk ks.cfg {0}".format( KS_DISK ) )
 
 # Create the disk to contain /boot
 # This will be dissected later for pv-grub compatability
 
-run( "qemu-img create -f qcow2 hd-boot 1G" )
-guestfish( "-a hd-boot",
+run( "qemu-img create -f qcow2 {0} 1G".format( HD_BOOT ) )
+guestfish( "-a {0}".format( HD_BOOT ),
            """run
 part-disk /dev/vda msdos
 """ )
@@ -84,8 +85,8 @@ part-disk /dev/vda msdos
 # Create the disk to contain root and swap 
 # Note that this is larger than on Linode, but the root FS created will be
 # the right size
-run( "qemu-img create -f qcow2 hd-root 30G" )
-guestfish( "-a hd-root",
+run( "qemu-img create -f qcow2 {0} 30G".format( HD_ROOT ) )
+guestfish( "-a {0}".format( HD_ROOT ),
            """run
 part-init /dev/vda msdos
 
@@ -100,7 +101,11 @@ part-add /dev/vda primary 37748737 38797313
 run( """qemu-kvm -boot n -m 1023 \
     -net nic,vlan=1 \
     -net user,vlan=1,tftp=`pwd`/pxe/,bootfile=/pxelinux.0 \
-    -drive file=hd-boot,index=0,media=disk \
-    -drive file=hd-root,index=1,media=disk,cache=unsafe \
-    -drive file=fd,index=2,media=disk \
-    -drive file={iso},media=cdrom""".format( FEDORA_ISO ) )
+    -drive file={boot},index=0,media=disk \
+    -drive file={root},index=1,media=disk,cache=unsafe \
+    -drive file={ks},index=2,media=disk \
+    -drive file={iso},media=cdrom""".format(
+        boot = HD_BOOT,
+        root = HD_ROOT,
+        ks = KS_DISK,
+        iso = FEDORA_ISO ) )
