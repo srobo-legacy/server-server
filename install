@@ -1,26 +1,39 @@
-#!/usr/bin/bash
+#!/usr/bin/env python
+import os
+import sys
+from subprocess import check_call, Popen, PIPE
+
+def run( *args, **kw ):
+    "Wrapper around check_call that sets shell to True"
+    kw["shell"] = True
+
+    return check_call( *args, **kw )
+
+def guestfish( args, cmds ):
+    "Run a set of guestfish commands"
+    p = Popen( "guestfish " + args, shell = True,
+               stdin = PIPE )
+    p.communicate( cmds )
+    assert p.wait() == 0
 
 # Create the boot disk
-echo "Creating kickstart floppy"
-./create-ks-disk ks.cfg fd
+run( "./create-ks-disk ks.cfg fd" )
 
 # Create the disk to contain /boot
 # This will be dissected later for pv-grub compatability
-echo "Creating boot disk"
-qemu-img create -f qcow2 hd-boot 1G
 
-guestfish -a hd-boot <<EOF
-run
+run( "qemu-img create -f qcow2 hd-boot 1G" )
+guestfish( "-a hd-boot",
+           """run
 part-disk /dev/vda msdos
-EOF
+""" )
 
 # Create the disk to contain root and swap 
 # Note that this is larger than on Linode, but the root FS created will be
 # the right size
-qemu-img create -f qcow2 hd-root 30G
-
-guestfish -a hd-root <<EOF
-run
+run( "qemu-img create -f qcow2 hd-root 30G" )
+guestfish( "-a hd-root",
+           """run
 part-init /dev/vda msdos
 
 # Root partition  -- 18GB
@@ -29,13 +42,12 @@ part-add /dev/vda primary 1 37748736
 
 # Swap partition -- 512MB
 part-add /dev/vda primary 37748737 38797313
+""" )
 
-EOF
-
-qemu-kvm -boot n -m 1023 \
+run( """qemu-kvm -boot n -m 1023 \
     -net nic,vlan=1 \
     -net user,vlan=1,tftp=`pwd`/pxe/,bootfile=/pxelinux.0 \
     -drive file=hd-boot,index=0,media=disk \
     -drive file=hd-root,index=1,media=disk \
     -drive file=fd,index=2,media=disk \
-    -drive file=Fedora-17-i386-DVD.iso,media=cdrom
+    -drive file=Fedora-17-i386-DVD.iso,media=cdrom""" )
