@@ -1,22 +1,6 @@
 #!/usr/bin/env python
-from disks import *
-from subprocess import check_call
+import vm
 
-PORT_BASE = 10000
-# Ports to forward into the guest
-PORTS = [ 22, 80, 443 ]
+v = vm.VM()
 
-fwd = ""
-for port in PORTS:
-    fwd += ",hostfwd=tcp::{hostport}-:{guestport}".format(
-        hostport = PORT_BASE + port,
-        guestport = port )
-
-check_call( """qemu-kvm -boot n -m 1023 \
-    -net nic,vlan=1 \
-    -net user,vlan=1{hostfwd} \
-    -drive file={boot},index=0,media=disk \
-    -drive file={root},index=1,media=disk""".format(
-        boot = HD_BOOT, root = HD_ROOT,
-        hostfwd = fwd ),
-            shell = True )
+v.p.wait()

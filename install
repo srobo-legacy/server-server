@@ -7,6 +7,7 @@ from urllib import urlretrieve
 import shutil
 from disks import *
 from proc import run
+import vm
 
 FEDORA_ISO = "Fedora-17-i386-DVD.iso"
 FEDORA_ISO_URL = "http://download.fedoraproject.org/pub/fedora/linux/releases/17/Fedora/i386/iso/Fedora-17-i386-DVD.iso"
@@ -93,14 +94,8 @@ part-add /dev/vda primary 1 37748736
 part-add /dev/vda primary 37748737 38797313
 """ )
 
-run( """qemu-kvm -boot n -m 1023 \
-    -net nic,vlan=1 \
-    -net user,vlan=1,tftp=`pwd`/pxe/,bootfile=/pxelinux.0 \
-    -drive file={boot},index=0,media=disk \
-    -drive file={root},index=1,media=disk,cache=unsafe \
-    -drive file={ks},index=2,media=disk \
-    -drive file={iso},media=cdrom""".format(
-        boot = HD_BOOT,
-        root = HD_ROOT,
-        ks = KS_DISK,
-        iso = FEDORA_ISO ) )
+v = vm.VM( extra_args = [
+        "-drive", "file={0},index=2,media=disk".format( KS_DISK ),
+        "-drive", "file={0},media=cdrom".format( FEDORA_ISO ) ],
+           netboot = True )
+v.p.wait()
