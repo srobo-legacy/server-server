@@ -8,6 +8,8 @@ from urllib import urlretrieve
 FEDORA_ISO = "Fedora-17-i386-DVD.iso"
 FEDORA_ISO_URL = "http://download.fedoraproject.org/pub/fedora/linux/releases/17/Fedora/i386/iso/Fedora-17-i386-DVD.iso"
 
+PXE_DIR = "pxe"
+
 def run( *args, **kw ):
     "Wrapper around check_call that sets shell to True"
     kw["shell"] = True
@@ -49,6 +51,16 @@ if not os.path.exists( FEDORA_ISO ):
 
     urlretrieve( FEDORA_ISO_URL, FEDORA_ISO,
                  reporthook = get_download_hook() )
+
+# Construct the PXE files
+for fname in [ "initrd.img", "vmlinuz" ]:
+    target = os.path.join( PXE_DIR, fname )
+
+    if not os.path.exists( target ):
+        run( "iso-read -i {iso} -e images/pxeboot/{fname} -o {of}".format(
+                iso = FEDORA_ISO,
+                fname = fname,
+                of = target ) )
 
 # Create the boot disk
 run( "./create-ks-disk ks.cfg fd" )
