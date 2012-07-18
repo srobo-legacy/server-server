@@ -3,7 +3,7 @@ from disks import *
 
 PORT_BASE = 10000
 # Ports to forward into the guest
-PORTS = [ 22, 80, 443 ]
+PORTS = [ 22, 80, 443, 9418 ]
 
 class VM(object):
     def __init__(self, extra_args = [], netboot = False, snapshot = False):
