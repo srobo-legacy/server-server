@@ -66,36 +66,39 @@ if not os.path.exists(target):
     shutil.copyfile( "/usr/share/syslinux/pxelinux.0",
                      target )
 
+v = vm.VM( netboot = True )
+
+# Create boot and root
+v.create_default_disks()
+
 # Create the kickstart disk
-run( "./create-ks-disk ks.cfg {0}".format( KS_DISK ) )
+ks_disk = os.path.join( v.disk_get_dir(), "ks-disk" )
+run( "./create-ks-disk ks.cfg {0}".format( ks_disk ) )
 
-# Create the disk to contain /boot
-# This will be dissected later for pv-grub compatability
+# "insert" the kickstart disk
+v.add_args( [ "-drive", "file={0},index=2,media=disk".format( ks_disk ) ] )
 
-run( "qemu-img create -f qcow2 {0} 1G".format( HD_BOOT ) )
-guestfish( "-a {0}".format( HD_BOOT ),
+# Format the boot and root disks
+guestfish( "-a {0} -a {1}".format( 
+        v.disk_get_path( "hd-boot" ),
+        v.disk_get_path( "hd-root" ), ),
            """run
+# Boot disk -- don't need a partition table
 part-disk /dev/vda msdos
-""" )
 
-# Create the disk to contain root and swap 
-# Note that this is larger than on Linode, but the root FS created will be
-# the right size
-run( "qemu-img create -f qcow2 {0} 30G".format( HD_ROOT ) )
-guestfish( "-a {0}".format( HD_ROOT ),
-           """run
-part-init /dev/vda msdos
+# Root disk
+part-init /dev/vdb msdos
 
 # Root partition  -- 18GB
 # Assume sector size of 512
-part-add /dev/vda primary 1 37748736
+part-add /dev/vdb primary 1 37748736
 
 # Swap partition -- 512MB
-part-add /dev/vda primary 37748737 38797313
+part-add /dev/vdb primary 37748737 38797313
 """ )
 
-v = vm.VM( extra_args = [
-        "-drive", "file={0},index=2,media=disk".format( KS_DISK ),
-        "-drive", "file={0},media=cdrom".format( FEDORA_ISO ) ],
-           netboot = True )
+# Insert the CD
+v.add_args( [ "-drive", "file={0},media=cdrom".format( FEDORA_ISO ) ] )
+
+v.run()
 v.p.wait()
