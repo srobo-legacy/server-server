@@ -1,0 +1,8 @@
+#!/usr/bin/env python
+import vm
+
+v = vm.VM()
+
+for x in v.list_disk_sets():
+    print x
+
