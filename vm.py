@@ -7,13 +7,17 @@ PORT_BASE = 10000
 # Ports to forward into the guest
 PORTS = [ 22, 80, 443, 9418 ]
 
+GRAPHICS_DEFAULT = 0
+GRAPHICS_HIDE = 1
 
 class VM(object):
-    def __init__(self, extra_args = [], netboot = False, snapshot = False):
+    def __init__(self, extra_args = [], netboot = False, snapshot = False,
+                 graphics = GRAPHICS_DEFAULT ):
         self.netboot = netboot
         self.extra_args = extra_args
         self.snapshot = snapshot
         self.disk_set = "base"
+        self.graphics = graphics
 
     def add_args(self, args):
         self.extra_args += args
@@ -96,6 +100,9 @@ class VM(object):
                   "file={0},index=0,media=disk".format( self.disk_get_path( "hd-boot" ) ),
                   "-drive",
                   "file={0},index=1,media=disk".format( self.disk_get_path( "hd-root" ) ) ]
+
+        if self.graphics == GRAPHICS_HIDE:
+            args += [ "-display", "none" ]
 
         args += self.extra_args
 

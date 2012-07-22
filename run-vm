@@ -14,11 +14,21 @@ parser.add_argument( "--disk-set", type=str,
                      dest="disk_set", default="base",
                      help="Name of the disk set to use" )
 
+parser.add_argument( "--hide-graphics",
+                     dest="hide_graphics", default=False,
+                     action = "store_true",
+                     help = "Don't show the VM's graphics output" )
+
 args = parser.parse_args()
 
 snapshot = not args.save_changes
 
-v = vm.VM( snapshot = snapshot )
+graphics = vm.GRAPHICS_DEFAULT
+if args.hide_graphics:
+    graphics = vm.GRAPHICS_HIDE
+
+v = vm.VM( snapshot = snapshot,
+           graphics = graphics )
 
 v.set_disk_set( args.disk_set )
 
