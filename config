@@ -3,10 +3,6 @@ import os
 import remote
 import sys
 
-import ssh
-import subprocess
-from subprocess import Popen, PIPE
-
 MY_DIR = os.path.dirname( __file__ )
 PUPPET_DIR = os.path.join( MY_DIR, "puppet")
 
