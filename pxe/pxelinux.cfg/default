@@ -6,5 +6,5 @@ label fedora
   menu label ^Install Fedora
   menu default
   kernel vmlinuz
-  append initrd=initrd.img ks=hd:sdc:/ks.cfg
+  append initrd=initrd.img ks=hd:sdb:/ks.cfg
 
