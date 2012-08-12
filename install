@@ -76,25 +76,20 @@ ks_disk = os.path.join( v.disk_get_dir(), "ks-disk" )
 run( "./create-ks-disk ks.cfg {0}".format( ks_disk ) )
 
 # "insert" the kickstart disk
-v.add_args( [ "-drive", "file={0},index=2,media=disk".format( ks_disk ) ] )
+v.add_args( [ "-drive", "file={0},index=1,media=disk".format( ks_disk ) ] )
 
 # Format the boot and root disks
-guestfish( "-a {0} -a {1}".format( 
-        v.disk_get_path( "hd-boot" ),
-        v.disk_get_path( "hd-root" ), ),
+guestfish( "-a {0}".format( v.disk_get_path( "hd-root" ) ),
            """run
-# Boot disk -- don't need a partition table
-part-disk /dev/vda msdos
-
 # Root disk
-part-init /dev/vdb msdos
+part-init /dev/vda msdos
 
 # Root partition  -- 18GB
 # Assume sector size of 512
-part-add /dev/vdb primary 1 37748736
+part-add /dev/vda primary 2048 37748736
 
 # Swap partition -- 512MB
-part-add /dev/vdb primary 37748737 38797313
+part-add /dev/vda primary 37748737 38797313
 """ )
 
 # Insert the CD

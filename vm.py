@@ -33,21 +33,18 @@ class VM(object):
         "Create the set of default disks"
 
         if not os.path.exists( DISKS_DIR ):
-            print "Making disks dir"
             os.mkdir( DISKS_DIR )
 
         disk_dir = self.disk_get_dir()
         if not os.path.exists( disk_dir ):
-            print "Making base disk dir"
             os.mkdir( disk_dir )
 
-        self.new_disk( "hd-boot", "1G" )
         self.new_disk( "hd-root", "30G" )
 
     def create_set(self, name, base = "base"):
         "Create a new set of disks, and switch to it"
 
-        disks = { "hd-boot": {}, "hd-root": {} }
+        disks = { "hd-root": {} }
 
         for disk_name, info in disks.iteritems():
             info["base"] = self.disk_get_path(disk_name)
@@ -106,9 +103,7 @@ class VM(object):
 
         # Disks
         args += [ "-drive",
-                  "file={0},index=0,media=disk".format( self.disk_get_path( "hd-boot" ) ),
-                  "-drive",
-                  "file={0},index=1,media=disk".format( self.disk_get_path( "hd-root" ) ) ]
+                  "file={0},index=0,media=disk".format( self.disk_get_path( "hd-root" ) ) ]
 
         if self.graphics == GRAPHICS_HIDE:
             args += [ "-display", "none" ]
