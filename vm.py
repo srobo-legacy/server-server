@@ -12,12 +12,14 @@ GRAPHICS_HIDE = 1
 
 class VM(object):
     def __init__(self, extra_args = [], netboot = False, snapshot = False,
-                 graphics = GRAPHICS_DEFAULT ):
+                 graphics = GRAPHICS_DEFAULT,
+                 fast_cache = False ):
         self.netboot = netboot
         self.extra_args = extra_args
         self.snapshot = snapshot
         self.disk_set = "base"
         self.graphics = graphics
+        self.fast_cache = fast_cache
 
     def add_args(self, args):
         self.extra_args += args
@@ -102,8 +104,11 @@ class VM(object):
         args += [ "-net", netargs ]
 
         # Disks
-        args += [ "-drive",
-                  "file={0},index=0,media=disk".format( self.disk_get_path( "hd-root" ) ) ]
+        disk = "file={0},index=0,media=disk".format( self.disk_get_path( "hd-root" ) )
+        if self.fast_cache:
+            disk += ",cache=writeback"
+
+        args += [ "-drive", disk ]
 
         if self.graphics == GRAPHICS_HIDE:
             args += [ "-display", "none" ]
