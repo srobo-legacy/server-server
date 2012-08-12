@@ -32,6 +32,15 @@ class VM(object):
     def create_default_disks(self):
         "Create the set of default disks"
 
+        if not os.path.exists( DISKS_DIR ):
+            print "Making disks dir"
+            os.mkdir( DISKS_DIR )
+
+        disk_dir = self.disk_get_dir()
+        if not os.path.exists( disk_dir ):
+            print "Making base disk dir"
+            os.mkdir( disk_dir )
+
         self.new_disk( "hd-boot", "1G" )
         self.new_disk( "hd-root", "30G" )
 
