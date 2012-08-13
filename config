@@ -9,7 +9,13 @@ PUPPET_DIR = os.path.join( MY_DIR, "puppet")
 s = remote.VMSSH()
 
 # Copy/untar data to /srv
-
+print "Transferring secrets...",
+sys.stdout.flush()
+s.push_dir( os.path.join( MY_DIR, "secrets" ),
+            "/srv/secrets",
+            remove_remote = True,
+            mode = "0700" )
+print "done."
 
 # Copy/untar secrets to /srv
 

@@ -17,13 +17,18 @@ class VMSSH(object):
         fds = self.exec_command( cmd )
         assert fds[0].channel.recv_exit_status() == 0
 
-    def push_dir( self, localdir, remdir, remove_remote = False ):
+    def push_dir( self, localdir, remdir,
+                  remove_remote = False,
+                  mode = "0775" ):
 
         if remove_remote:
             self._check_call( "rm -rf {0}".format( remdir ) )
 
         # Create the remote dir if necessary
-        self._check_call( "test -e {0} || mkdir {0}".format( remdir ) )
+        self._check_call( "test -e {0} || mkdir -p {0}".format( remdir ) )
+
+        # Fix permissions
+        print "chmod {0} {1}".format( mode, remdir )
 
         # Tar it up locally
         p = Popen( "tar -c ./",
@@ -42,3 +47,7 @@ class VMSSH(object):
 
         assert p.wait() == 0
         assert fds[0].channel.recv_exit_status() == 0
+
+        # WARNING: There will be a gap in time when the requested permissions
+        #          do not apply.  This needs fixing!
+        self._check_call( "chmod {0} {1}".format( mode, remdir ) )
