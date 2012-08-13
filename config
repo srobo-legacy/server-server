@@ -21,4 +21,20 @@ s.push_dir( PUPPET_DIR, "/etc/puppet", remove_remote = True )
 print "done."
 
 # Apply the puppet config
+r = s.exec_command( "puppet apply /etc/puppet/manifests/sr-dev.pp" )
+
+while True:
+    c = 0
+
+    for f in r[1:]:
+        l = f.readline()
+        if l == "":
+            c += 1
+        else:
+            print l.strip()
+
+    if c == 2:
+        break
+
+r[0].channel.recv_exit_status()
 
