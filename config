@@ -17,7 +17,7 @@ s = remote.VMSSH()
 # Install the puppet config
 print "Transferring new puppet config...",
 sys.stdout.flush()
-s.push_dir( "./puppet", PUPPET_DIR, remove_remote = True )
+s.push_dir( PUPPET_DIR, "/etc/puppet", remove_remote = True )
 print "done."
 
 # Apply the puppet config
