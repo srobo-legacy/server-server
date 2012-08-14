@@ -5,10 +5,15 @@ import sys
 
 MY_DIR = os.path.dirname( __file__ )
 PUPPET_DIR = os.path.join( MY_DIR, "puppet")
+SECRETS_DIR = os.path.join( MY_DIR, "secrets" )
 
 s = remote.VMSSH()
 
 # Copy/untar data to /srv
+if not os.path.exists( SECRETS_DIR ):
+    print >>sys.stderr, "secrets not found."
+    print >>sys.stderr, "Either clone the dummy secrets repository, or get the real secrets ;-)"
+
 print "Transferring secrets...",
 sys.stdout.flush()
 s.push_dir( os.path.join( MY_DIR, "secrets" ),
