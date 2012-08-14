@@ -27,9 +27,6 @@ class VMSSH(object):
         # Create the remote dir if necessary
         self._check_call( "test -e {0} || mkdir -p {0}".format( remdir ) )
 
-        # Fix permissions
-        print "chmod {0} {1}".format( mode, remdir )
-
         # Tar it up locally
         p = Popen( "tar -c ./",
                    shell = True,
