@@ -44,11 +44,30 @@ def get_download_hook():
 
     return download_hook
 
-if not os.path.exists( FEDORA_ISO ):
-    print >>sys.stderr, """Fedora ISO "{0}" not found.""".format( FEDORA_ISO )
+def find_fedora_iso():
+    if not os.path.exists( FEDORA_ISO ):
+        print >>sys.stderr, """Fedora ISO "{0}" not found.""".format( FEDORA_ISO )
 
-    urlretrieve( FEDORA_ISO_URL, FEDORA_ISO,
-                 reporthook = get_download_hook() )
+        res = raw_input( "Do you want to download it now? [N|y]" )
+        if res[0].lower() == "y":
+            urlretrieve( FEDORA_ISO_URL, FEDORA_ISO,
+                         reporthook = get_download_hook() )
+            return
+
+        res = raw_input( "Do you have it somewhere else on your system already? [N|y]" )
+        if res[0].lower() != "y":
+            print "Aborting due to lack of Fedora ISO"
+            exit(1)
+
+        path = raw_input( "Enter the path to the ISO:" )
+        if not os.path.exists( path ):
+            print "Aborting: Path not found."
+            exit(1)
+
+        print "symlinking to ISO."
+        os.symlink( path, FEDORA_ISO )
+
+find_fedora_iso()
 
 # Construct the PXE files
 for fname in [ "initrd.img", "vmlinuz" ]:
