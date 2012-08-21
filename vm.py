@@ -98,7 +98,7 @@ class VM(object):
 
         if self.netboot:
             args += [ "-boot", "n" ]
-            netargs += ",tftp=pxe,bootfile=/pxelinux.0"
+            netargs += ",tftp=init/pxe,bootfile=/pxelinux.0"
         else:
             args += [ "-boot", "c" ]
 

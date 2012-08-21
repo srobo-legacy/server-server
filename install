@@ -9,10 +9,10 @@ from proc import run
 import vm
 import tempfile
 
-FEDORA_ISO = "Fedora-17-i386-DVD.iso"
+FEDORA_ISO = "init/Fedora-17-i386-DVD.iso"
 FEDORA_ISO_URL = "http://download.fedoraproject.org/pub/fedora/linux/releases/17/Fedora/i386/iso/Fedora-17-i386-DVD.iso"
 
-PXE_DIR = "pxe"
+PXE_DIR = "init/pxe"
 
 def guestfish( args, cmds ):
     "Run a set of guestfish commands"
@@ -77,7 +77,7 @@ v.create_default_disks()
 ks_disk = os.path.join( v.disk_get_dir(), "ks-disk" )
 
 td = tempfile.mkdtemp()
-shutil.copy( "ks.cfg", td )
+shutil.copy( "init/ks.cfg", td )
 run( "virt-make-fs --type ext2 {0} {1}".format( td, ks_disk ) )
 shutil.rmtree(td)
 
