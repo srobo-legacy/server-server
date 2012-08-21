@@ -5,7 +5,6 @@ from subprocess import Popen, PIPE
 import progressbar
 from urllib import urlretrieve
 import shutil
-from disks import *
 from proc import run
 import vm
 import tempfile

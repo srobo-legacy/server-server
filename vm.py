@@ -1,5 +1,4 @@
 from subprocess import Popen
-from disks import *
 from proc import run
 import os
 
@@ -9,6 +8,8 @@ PORTS = [ 22, 80, 443, 9418 ]
 
 GRAPHICS_DEFAULT = 0
 GRAPHICS_HIDE = 1
+
+DISKS_DIR = os.path.join( os.path.dirname( __file__ ), "disks" )
 
 class VM(object):
     def __init__(self, extra_args = [], netboot = False, snapshot = False,
