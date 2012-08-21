@@ -8,6 +8,7 @@ import shutil
 from disks import *
 from proc import run
 import vm
+import tempfile
 
 FEDORA_ISO = "Fedora-17-i386-DVD.iso"
 FEDORA_ISO_URL = "http://download.fedoraproject.org/pub/fedora/linux/releases/17/Fedora/i386/iso/Fedora-17-i386-DVD.iso"
@@ -75,7 +76,11 @@ v.create_default_disks()
 
 # Create the kickstart disk
 ks_disk = os.path.join( v.disk_get_dir(), "ks-disk" )
-run( "./create-ks-disk ks.cfg {0}".format( ks_disk ) )
+
+td = tempfile.mkdtemp()
+shutil.copy( "ks.cfg", td )
+run( "virt-make-fs --type ext2 {0} {1}".format( td, ks_disk ) )
+shutil.rmtree(td)
 
 # "insert" the kickstart disk
 v.add_args( [ "-drive", "file={0},index=1,media=disk".format( ks_disk ) ] )
