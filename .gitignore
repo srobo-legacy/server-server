@@ -2,4 +2,5 @@ fd
 hd-boot
 hd-root
 *.iso
+*.pyc
 secrets
