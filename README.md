@@ -32,3 +32,11 @@ If you make changes to the "dummy-secrets" values, or the config,
 
 The best thing about this situation is that it is now possible to accept patches against the server configuration.
 If you would like to get involved, let us know, generate patches, etc.
+
+Requirements
+=============
+
+ * qemu
+ * qemu-img
+ * libguestfs-tools
+ * python-ssh
