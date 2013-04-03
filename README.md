@@ -10,7 +10,7 @@ Here are some approximate instructions on how to use it:
     ./install
     # follow instructions if it provides any
     # (likely you'll need to install some dependencies)
-    ./dsets new puppet
+    ./dsets new puppet base
     ./run-vm --save-changes --disk-set puppet
 
     # wait for that to boot, then in another shell:
