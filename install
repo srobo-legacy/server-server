@@ -107,14 +107,14 @@ v.add_args( [ "-drive", "file={0},index=1,media=disk".format( ks_disk ) ] )
 guestfish( "-a {0}".format( v.disk_get_path( "hd-root" ) ),
            """run
 # Root disk
-part-init /dev/vda msdos
+part-init /dev/sda msdos
 
 # Root partition  -- 18GB
 # Assume sector size of 512
-part-add /dev/vda primary 2048 37748736
+part-add /dev/sda primary 2048 37748736
 
 # Swap partition -- 512MB
-part-add /dev/vda primary 37748737 38797313
+part-add /dev/sda primary 37748737 38797313
 """ )
 
 # Insert the CD
