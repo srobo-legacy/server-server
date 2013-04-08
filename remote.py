@@ -4,11 +4,15 @@ import subprocess
 from subprocess import Popen, PIPE
 
 class VMSSH(object):
-    def __init__(self):
+    def __init__( self,
+                  hostname = "127.0.0.1",
+                  port = 10022,
+                  username = "root",
+                  password = "123456" ):
         self.c = ssh.SSHClient()
         self.c.set_missing_host_key_policy(ssh.AutoAddPolicy())
-        self.c.connect( "127.0.0.1", port=10022,
-                        username="root", password="123456" )
+        self.c.connect( hostname, port=port,
+                        username=username, password=password )
         
     def exec_command(self, cmd):
         return self.c.exec_command(cmd)

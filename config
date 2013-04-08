@@ -1,16 +1,31 @@
 #!/usr/bin/env python
+import argparse
 import os
 import remote
 import sys
 
 MY_DIR = os.path.dirname( __file__ )
-PUPPET_DIR = os.path.join( MY_DIR, "puppet")
-SECRETS_DIR = os.path.join( MY_DIR, "secrets" )
 
-s = remote.VMSSH()
+parser = argparse.ArgumentParser( description = "Copy puppet config to VM and apply it" )
+parser.add_argument( "--puppet",
+                     help = "Puppet directory",
+                     default = os.path.join( MY_DIR, "puppet" ) )
+parser.add_argument( "--secrets",
+                     help = "Secrets directory",
+                     default = os.path.join( MY_DIR, "secrets" ) )
+parser.add_argument( "-s", "--server",
+                     help = "Hostname of target server",
+                     default = "127.0.0.1" )
+parser.add_argument( "-p", "--port",
+                     help = "Port number of SSH of target server",
+                     default = 10022, type = int )
+args = parser.parse_args()
+
+s = remote.VMSSH( hostname = args.server,
+                  port = args.port )
 
 # Copy/untar data to /srv
-if not os.path.exists( SECRETS_DIR ):
+if not os.path.exists( args.secrets ):
     print >>sys.stderr, "secrets not found."
     print >>sys.stderr, "Either clone the dummy secrets repository, or get the real secrets ;-)"
 
@@ -28,7 +43,7 @@ print "done."
 # Install the puppet config
 print "Transferring new puppet config...",
 sys.stdout.flush()
-s.push_dir( PUPPET_DIR, "/etc/puppet", remove_remote = True )
+s.push_dir( args.puppet, "/etc/puppet", remove_remote = True )
 print "done."
 
 # Apply the puppet config
