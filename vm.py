@@ -2,7 +2,6 @@ from subprocess import Popen
 from proc import run
 import os
 
-PORT_BASE = 10000
 # Ports to forward into the guest
 PORTS = [ 22, 80, 443, 9418 ]
 
@@ -14,6 +13,7 @@ DISKS_DIR = os.path.join( os.path.dirname( __file__ ), "disks" )
 class VM(object):
     def __init__(self, extra_args = [], netboot = False, snapshot = False,
                  graphics = GRAPHICS_DEFAULT,
+                 port_offset = 10000,
                  fast_cache = False ):
         self.netboot = netboot
         self.extra_args = extra_args
@@ -21,6 +21,7 @@ class VM(object):
         self.disk_set = "base"
         self.graphics = graphics
         self.fast_cache = fast_cache
+        self.port_offset = port_offset
 
     def add_args(self, args):
         self.extra_args += args
@@ -93,7 +94,7 @@ class VM(object):
         # Forward ports into the VM
         for port in PORTS:
             netargs += ",hostfwd=tcp::{hostport}-:{guestport}".format(
-                hostport = PORT_BASE + port,
+                hostport = self.port_offset + port,
                 guestport = port )
 
         if self.netboot:
