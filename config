@@ -37,9 +37,6 @@ s.push_dir( os.path.join( MY_DIR, "secrets" ),
             mode = "0700" )
 print "done."
 
-# Copy/untar secrets to /srv
-
-
 # Install the puppet config
 print "Transferring new puppet config...",
 sys.stdout.flush()
