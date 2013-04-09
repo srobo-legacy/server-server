@@ -31,7 +31,7 @@ if not os.path.exists( args.secrets ):
 
 print "Transferring secrets...",
 sys.stdout.flush()
-s.push_dir( os.path.join( MY_DIR, "secrets" ),
+s.push_dir( args.secrets,
             "/srv/secrets",
             remove_remote = True,
             mode = "0700" )
