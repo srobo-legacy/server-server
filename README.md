@@ -39,4 +39,5 @@ Requirements
  * qemu
  * qemu-img
  * libguestfs-tools
+ * python-progressbar
  * python-ssh
