@@ -1,11 +1,11 @@
 #!/usr/bin/env python
+from argparse import ArgumentParser
 import libvirt
 import os
 from subprocess import check_call, Popen, PIPE
 import sys
 
 DOMAIN = "sr-server"
-FEDORA_ROOT = "http://ftp-stud.hs-esslingen.de/pub/Mirrors/archive.fedoraproject.org/fedora/linux/releases/17/Fedora/i386/os/"
 DISK = os.path.join( os.path.dirname( __file__ ), "hda" )
 
 def guestfish( args, cmds ):
@@ -14,6 +14,12 @@ def guestfish( args, cmds ):
                stdin = PIPE )
     p.communicate( cmds )
     assert p.wait() == 0
+
+parser = ArgumentParser( description = "Build an SR VM" )
+parser.add_argument( "--fedora-source",
+                     help = "The source location to get Fedora files from",
+                     default = "http://ftp-stud.hs-esslingen.de/pub/Mirrors/archive.fedoraproject.org/fedora/linux/releases/17/Fedora/i386/os/" )
+args = parser.parse_args()
 
 conn = libvirt.openReadOnly()
 domains = [ d.name() for d in conn.listAllDomains() ]
@@ -49,7 +55,7 @@ check_call( [ "virt-install",
               "--disk", "{0},format=qcow2".format(DISK),
               "--graphics", "spice",
               "--os-variant", "fedora17",
-              "--location", FEDORA_ROOT,
+              "--location", args.fedora_source,
               "--initrd-inject", os.path.join( os.path.dirname(__file__), "init", "ks.cfg" ),
               "--extra-args", "ks=file:/ks.cfg",
               "--noreboot" ] )
