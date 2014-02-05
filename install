@@ -1,18 +1,12 @@
 #!/usr/bin/env python
+import libvirt
 import os
+from subprocess import check_call, Popen, PIPE
 import sys
-from subprocess import Popen, PIPE
-import progressbar
-from urllib import urlretrieve
-import shutil
-from proc import run
-import vm
-import tempfile
 
-FEDORA_ISO = "init/Fedora-17-i386-DVD.iso"
-FEDORA_ISO_URL = "http://download.fedoraproject.org/pub/fedora/linux/releases/17/Fedora/i386/iso/Fedora-17-i386-DVD.iso"
-
-PXE_DIR = "init/pxe"
+DOMAIN = "sr-server"
+FEDORA_ROOT = "http://ftp-stud.hs-esslingen.de/pub/Mirrors/archive.fedoraproject.org/fedora/linux/releases/17/Fedora/i386/os/"
+DISK = os.path.join( os.path.dirname( __file__ ), "hda" )
 
 def guestfish( args, cmds ):
     "Run a set of guestfish commands"
@@ -21,90 +15,21 @@ def guestfish( args, cmds ):
     p.communicate( cmds )
     assert p.wait() == 0
 
-class PBWrapper(object):
-    def __init__(self):
-        self.pb = None
+conn = libvirt.openReadOnly()
+domains = [ d.name() for d in conn.listAllDomains() ]
 
-def get_download_hook():
+if DOMAIN in domains:
+    print >>sys.stderr, "You already have a domain called '{0}'".format( DOMAIN )
+    print >>sys.stderr, "If you want to get rid of it:"
+    print >>sys.stderr, "        `virsh destroy {0}`".format( DOMAIN )
+    print >>sys.stderr, "    then"
+    print >>sys.stderr, "        `virsh undefine {0}`".format( DOMAIN )
+    exit(1)
 
-    pw = PBWrapper()
-
-    def download_hook( down, chunk_size, total_size ):
-
-        if pw.pb == None:
-            w = [ "Downloading: ", progressbar.Percentage(), " ",
-                  progressbar.Bar( marker = progressbar.RotatingMarker() ),
-                  progressbar.FileTransferSpeed() ]
-
-            pw.pb = progressbar.ProgressBar( maxval = total_size,
-                                             widgets = w )
-            pw.pb.start()
-
-        pw.pb.update( down * chunk_size )
-
-    return download_hook
-
-def find_fedora_iso():
-    if not os.path.exists( FEDORA_ISO ):
-        print >>sys.stderr, """Fedora ISO "{0}" not found.""".format( FEDORA_ISO )
-
-        res = raw_input( "Do you want to download it now? [N|y]" )
-        if res[0].lower() == "y":
-            urlretrieve( FEDORA_ISO_URL, FEDORA_ISO,
-                         reporthook = get_download_hook() )
-            return
-
-        res = raw_input( "Do you have it somewhere else on your system already? [N|y]" )
-        if res[0].lower() != "y":
-            print "Aborting due to lack of Fedora ISO"
-            exit(1)
-
-        path = raw_input( "Enter the path to the ISO:" )
-        if not os.path.exists( path ):
-            print "Aborting: Path not found."
-            exit(1)
-
-        print "symlinking to ISO."
-        os.symlink( path, FEDORA_ISO )
-
-find_fedora_iso()
-
-# Construct the PXE files
-for fname in [ "initrd.img", "vmlinuz" ]:
-    target = os.path.join( PXE_DIR, fname )
-
-    if not os.path.exists( target ):
-        run( "iso-read -i {iso} -e images/pxeboot/{fname} -o {of}".format(
-                iso = FEDORA_ISO,
-                fname = fname,
-                of = target ) )
-
-# Get pxelinux
-target = os.path.join( PXE_DIR, "pxelinux.0" )
-if not os.path.exists(target):
-    shutil.copyfile( "/usr/share/syslinux/pxelinux.0",
-                     target )
-
-v = vm.VM( netboot = True,
-           # Use a faster, but more unsafe cache for the install
-           fast_cache = True )
-
-# Create boot and root
-v.create_default_disks()
-
-# Create the kickstart disk
-ks_disk = os.path.join( v.disk_get_dir(), "ks-disk" )
-
-td = tempfile.mkdtemp()
-shutil.copy( "init/ks.cfg", td )
-run( "virt-make-fs --type ext2 {0} {1}".format( td, ks_disk ) )
-shutil.rmtree(td)
-
-# "insert" the kickstart disk
-v.add_args( [ "-drive", "file={0},index=1,media=disk".format( ks_disk ) ] )
+check_call( [ "qemu-img", "create", "-f", "qcow2", "hda", "50G" ] )
 
 # Format the boot and root disks
-guestfish( "-a {0}".format( v.disk_get_path( "hd-root" ) ),
+guestfish( "-a {0}".format( DISK ),
            """run
 # Root disk
 part-init /dev/sda msdos
@@ -117,8 +42,14 @@ part-add /dev/sda primary 2048 37748736
 part-add /dev/sda primary 37748737 38797313
 """ )
 
-# Insert the CD
-v.add_args( [ "-drive", "file={0},media=cdrom".format( FEDORA_ISO ) ] )
+check_call( [ "virt-install",
+              "--hvm",
+              "--name", DOMAIN,
+              "--ram", "1023",
+              "--disk", "{0},format=qcow2".format(DISK),
+              "--graphics", "spice",
+              "--os-variant", "fedora17",
+              "--location", FEDORA_ROOT,
+              "--initrd-inject", os.path.join( os.path.dirname(__file__), "init", "ks.cfg" ),
+              "--extra-args", "ks=file:/ks.cfg" ] )
 
-v.run()
-v.p.wait()
