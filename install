@@ -51,5 +51,6 @@ check_call( [ "virt-install",
               "--os-variant", "fedora17",
               "--location", FEDORA_ROOT,
               "--initrd-inject", os.path.join( os.path.dirname(__file__), "init", "ks.cfg" ),
-              "--extra-args", "ks=file:/ks.cfg" ] )
+              "--extra-args", "ks=file:/ks.cfg",
+              "--noreboot" ] )
 
