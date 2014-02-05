@@ -6,7 +6,6 @@ from subprocess import check_call, Popen, PIPE
 import sys
 
 DOMAIN = "sr-server"
-DISK = os.path.join( os.path.dirname( __file__ ), "hda" )
 
 def guestfish( args, cmds ):
     "Run a set of guestfish commands"
@@ -19,6 +18,9 @@ parser = ArgumentParser( description = "Build an SR VM" )
 parser.add_argument( "--fedora-source",
                      help = "The source location to get Fedora files from",
                      default = "http://ftp-stud.hs-esslingen.de/pub/Mirrors/archive.fedoraproject.org/fedora/linux/releases/17/Fedora/i386/os/" )
+parser.add_argument( "--disk",
+                     help = "Path to the disk to create",
+                     default = os.path.join( os.path.dirname( __file__ ), "hda" ) )
 args = parser.parse_args()
 
 conn = libvirt.openReadOnly()
@@ -35,7 +37,7 @@ if DOMAIN in domains:
 check_call( [ "qemu-img", "create", "-f", "qcow2", "hda", "50G" ] )
 
 # Format the boot and root disks
-guestfish( "-a {0}".format( DISK ),
+guestfish( "-a {0}".format( args.disk ),
            """run
 # Root disk
 part-init /dev/sda msdos
@@ -52,7 +54,7 @@ check_call( [ "virt-install",
               "--hvm",
               "--name", DOMAIN,
               "--ram", "1023",
-              "--disk", "{0},format=qcow2".format(DISK),
+              "--disk", "{0},format=qcow2".format(args.disk),
               "--graphics", "spice",
               "--os-variant", "fedora17",
               "--location", args.fedora_source,
