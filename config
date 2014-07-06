@@ -28,6 +28,8 @@ parser.add_argument( "-p", "--port",
 parser.add_argument( "--pp-path",
                      help = "Path (on the server) of the puppet file to apply",
                      default = "/etc/puppet/manifests/sr-dev.pp" )
+parser.add_argument( "--pp-args",
+                     help = "Additional arguments to pass to puppet" )
 args = parser.parse_args()
 
 s = remote.VMSSH( hostname = args.server,
@@ -54,7 +56,7 @@ s.push_dir( args.puppet, "/etc/puppet", remove_remote = True )
 print "done."
 
 # Apply the puppet config
-r = s.exec_command( "puppet apply {}".format(args.pp_path) )
+r = s.exec_command( "puppet apply {0} {1}".format(args.pp_args, args.pp_path) )
 
 while True:
     c = 0
