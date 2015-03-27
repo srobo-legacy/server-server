@@ -29,7 +29,8 @@ parser.add_argument( "--pp-path",
                      help = "Path (on the server) of the puppet file to apply",
                      default = "/etc/puppet/manifests/sr-dev.pp" )
 parser.add_argument( "--pp-args",
-                     help = "Additional arguments to pass to puppet" )
+                     help = "Additional arguments to pass to puppet",
+                     default = "" )
 args = parser.parse_args()
 
 s = remote.VMSSH( hostname = args.server,
